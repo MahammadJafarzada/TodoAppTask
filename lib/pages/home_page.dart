@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
+import 'package:todo_task/data/local_storage.dart';
+import 'package:todo_task/main.dart';
 import 'package:todo_task/models/task_models.dart';
 import 'package:todo_task/widgets/task_list_item.dart';
 
@@ -12,12 +14,15 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late List<Task> _allTasks;
+  late LocalStorage _localStorage;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    _localStorage = locator<LocalStorage>();
     _allTasks = <Task>[];
+    _getAllTaskFromDb();
   }
 
   @override
@@ -27,19 +32,18 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: GestureDetector(
           onTap: () {
-            _showAddTaskBottomSheet(context);
+            _showAddTaskBottomSheet();
           },
           child: const Text(
-            'What are you doing today?',
+            'What is your plan?',
             style: TextStyle(color: Colors.black),
           ),
         ),
         centerTitle: false,
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
           IconButton(
               onPressed: () {
-                _showAddTaskBottomSheet(context);
+                _showAddTaskBottomSheet();
               },
               icon: const Icon(Icons.add))
         ],
@@ -65,6 +69,7 @@ class _HomePageState extends State<HomePage> {
                     key: Key(_oankiListeElemani.id),
                     onDismissed: (direction) {
                       _allTasks.removeAt(index);
+                      _localStorage.deleteTask(task: _oankiListeElemani);
                       setState(() {});
                     },
                     child: TaskItem(task: _oankiListeElemani));
@@ -77,7 +82,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _showAddTaskBottomSheet(BuildContext context) {
+  void _showAddTaskBottomSheet() {
     showModalBottomSheet(
         context: context,
         builder: (context) {
@@ -97,10 +102,11 @@ class _HomePageState extends State<HomePage> {
                       DatePicker.showTimePicker(
                         context,
                         showSecondsColumn: false,
-                        onConfirm: (time) {
+                        onConfirm: (time) async {
                           var yeniEklenecekGorev =
                               Task.create(name: value, createdAt: time);
-                          _allTasks.add(yeniEklenecekGorev);
+                          _allTasks.insert(0, yeniEklenecekGorev);
+                          await _localStorage.addTask(task: yeniEklenecekGorev);
                           setState(() {});
                         },
                       );
@@ -109,5 +115,10 @@ class _HomePageState extends State<HomePage> {
                 ),
               ));
         });
+  }
+
+  void _getAllTaskFromDb() async {
+    _allTasks = await _localStorage.getAllTask();
+    setState(() {});
   }
 }
