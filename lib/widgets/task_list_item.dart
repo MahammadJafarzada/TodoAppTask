@@ -65,7 +65,7 @@ class _TaskItemState extends State<TaskItem> {
                   textInputAction: TextInputAction.done,
                   decoration: const InputDecoration(border: InputBorder.none),
                   onSubmitted: (yenideger) {
-                    if (yenideger.length > 3) {
+                    if (yenideger.isNotEmpty) {
                       widget.task.name = yenideger;
                       _localStorage.updateTask(task: widget.task);
                     }

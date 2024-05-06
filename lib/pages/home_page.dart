@@ -98,7 +98,7 @@ class _HomePageState extends State<HomePage> {
                       hintText: 'What is your task?', border: InputBorder.none),
                   onSubmitted: (value) {
                     Navigator.of(context).pop();
-                    if (value.length > 3) {
+                    if (value.isNotEmpty) {
                       DatePicker.showTimePicker(
                         context,
                         showSecondsColumn: false,
